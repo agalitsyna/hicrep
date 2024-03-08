@@ -23,7 +23,7 @@ def testTrimDiags():
 
     # Testing that trimDiags does nothing when iDiagMax is greater than n and
     # keepMain is true
-    assert np.array_equal(trimDiags(mat1, 10, True).toarray() , mat1.toarray()),\
+    assert np.array_equal(trimDiags(mat1, -1, 10, True).toarray() , mat1.toarray()),\
         f"trimDiags failed to modify the test matrix as expected whem no"\
         f"change needed to be made"
 
@@ -33,7 +33,7 @@ def testTrimDiags():
                      [ 5,  0,  7,  8],
                      [ 9, 10,  0, 12],
                      [13, 14, 15,  0]])
-    assert np.array_equal(trimDiags(mat1, 4, False).toarray() , mat2),\
+    assert np.array_equal(trimDiags(mat1, -1, 4, False).toarray() , mat2),\
         f"trimDiags failed to modify the test matrix as expected when "\
         f"removing main diagonal"
 
@@ -42,7 +42,7 @@ def testTrimDiags():
                      [ 5,  6,  7,  0],
                      [ 0, 10, 11, 12],
                      [ 0,  0, 15, 16]])
-    assert np.array_equal(trimDiags(mat1, 2, True).toarray() , mat3),\
+    assert np.array_equal(trimDiags(mat1, -1, 2, True).toarray() , mat3),\
         f"trimDiags failed to modify the test matrix as expected trimming "\
         f"outer 2 diagonals"
 
@@ -51,16 +51,16 @@ def testTrimDiags():
                      [ 5,  0,  7,  0],
                      [ 0, 10,  0, 12],
                      [ 0,  0, 15,  0]])
-    assert np.array_equal(trimDiags(mat1, 2, False).toarray() , mat4),\
+    assert np.array_equal(trimDiags(mat1, -1, 2, False).toarray() , mat4),\
         f"trimDiags failed to modify the test matrix as expected when "\
         f"removing main diagonal and outer two diagonals"
 
     # Testing that if 0 diagonals are kept, you get a matrix of zeros with or
     # without keepMain
     mat5 = np.zeros((4,4))
-    assert np.array_equal(trimDiags(mat1, 0, True).toarray() , mat5),\
+    assert np.array_equal(trimDiags(mat1, -1, 0, True).toarray() , mat5),\
         f"trimDiags failed to modify the test matrix as expected when "\
         f"keeping no diagonals (with keepMain)"
-    assert np.array_equal(trimDiags(mat1, 0, False).toarray() , mat5),\
+    assert np.array_equal(trimDiags(mat1, -1, 0, False).toarray() , mat5),\
         f"trimDiags failed to modify the test matrix as expected when "\
         f"keeping no diagonals (without keepMain)"

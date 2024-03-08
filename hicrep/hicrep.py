@@ -92,7 +92,7 @@ def sccByDiag(m1: sp.coo_matrix, m2: sp.coo_matrix, nDiags: int):
 
 
 def hicrepSCC(cool1: cooler.api.Cooler, cool2: cooler.api.Cooler,
-              h: int, dBPMax: int, bDownSample: bool,
+              h: int, dBPMin: int, dBPMax: int, bDownSample: bool,
               chrNames: list = None, excludeChr: set = None):
     """Compute hicrep score between two input Cooler contact matrices
 
@@ -101,6 +101,8 @@ def hicrepSCC(cool1: cooler.api.Cooler, cool2: cooler.api.Cooler,
         cool2: `cooler.api.Cooler` Input Cooler contact matrix 2
         h: `int` Half-size of the mean filter used to smooth the
         input matrics
+        dBPMin `int` Only include contacts that are at least this genomic
+        distance (bp) away
         dBPMax `int` Only include contacts that are at most this genomic
         distance (bp) away
         bDownSample: `bool` Down sample the input with more contacts
@@ -146,6 +148,12 @@ def hicrepSCC(cool1: cooler.api.Cooler, cool2: cooler.api.Cooler,
     else:
         dMax = dBPMax // binSize + 1
     assert dMax > 1, f"Input dBPmax is smaller than binSize"
+    if (dBPMin == -1) or (dBPMin < binSize):
+        # this is the exclusive lower bound, always remove main diagonal
+        dMin = 0
+    else:
+        dMin = dBPMin // binSize - 1
+    assert dMin < dMax, f"Input dBPmin is larger than dBPmax"
     p1 = cool2pixels(cool1)
     p2 = cool2pixels(cool2)
     # get the total number of contacts as normalizing constant
@@ -179,13 +187,12 @@ def hicrepSCC(cool1: cooler.api.Cooler, cool2: cooler.api.Cooler,
             "Contact matrix 2 of chromosome %s is not square" % (chrName)
         assert mS1.shape == mS2.shape,\
             "Contact matrices of chromosome %s have different input shape" % (chrName)
-        nDiags = mS1.shape[0] if dMax < 0 else min(dMax, mS1.shape[0])
-        rho = np.full(nDiags, np.nan)
-        ws = np.full(nDiags, np.nan)
+        nDiagsMax = mS1.shape[0] if dMax < 0 else min(dMax, mS1.shape[0])
+        nDiagsMin = max(0, dMin)
         # remove major diagonal and all the diagonals >= nDiags
         # to save computation time
-        m1 = trimDiags(mS1, nDiags, False)
-        m2 = trimDiags(mS2, nDiags, False)
+        m1 = trimDiags(mS1, nDiagsMin, nDiagsMax, False)
+        m2 = trimDiags(mS2, nDiagsMin, nDiagsMax, False)
         del mS1
         del mS2
         if bDownSample:
@@ -204,5 +211,5 @@ def hicrepSCC(cool1: cooler.api.Cooler, cool2: cooler.api.Cooler,
             # apply smoothing
             m1 = meanFilterSparse(m1, h)
             m2 = meanFilterSparse(m2, h)
-        scc[iChr] = sccByDiag(m1, m2, nDiags)
+        scc[iChr] = sccByDiag(m1, m2, nDiagsMax) # Zero diagonals will be ignored
     return scc

@@ -89,21 +89,23 @@ def getSubCoo(pixels: cooler.core.RangeSelector2D, bins: cooler.core.RangeSelect
     return pixels2Coo(mSub, binsSub)
 
 
-def trimDiags(a: sp.coo_matrix, iDiagMax: int, bKeepMain: bool):
+def trimDiags(a: sp.coo_matrix, iDiagMin: int, iDiagMax: int, bKeepMain: bool):
     """Remove diagonal elements whose diagonal index is >= iDiagMax
     or is == 0
 
     Args:
         a: Input scipy coo_matrix
-        iDiagMax: Diagonal offset cutoff
+        iDiagMin: Diagonal offset cutoff (minimal distance to remove)
+        iDiagMax: Diagonal offset cutoff (maximal distance to discard all diagonals further)
         bKeepMain: If true, keep the elements in the main diagonal;
         otherwise remove them
 
     Returns:
         coo_matrix with the specified diagonals removed
     """
+    print(iDiagMin)
     gDist = np.abs(a.row - a.col)
-    idx = np.where((gDist < iDiagMax) & (bKeepMain | (gDist != 0)))
+    idx = np.where((gDist > iDiagMin) & (gDist < iDiagMax) & (bKeepMain | (gDist != 0)))
     return sp.coo_matrix((a.data[idx], (a.row[idx], a.col[idx])),
                          shape=a.shape, dtype=a.dtype)
 
