@@ -103,7 +103,6 @@ def trimDiags(a: sp.coo_matrix, iDiagMin: int, iDiagMax: int, bKeepMain: bool):
     Returns:
         coo_matrix with the specified diagonals removed
     """
-    print(iDiagMin)
     gDist = np.abs(a.row - a.col)
     idx = np.where((gDist > iDiagMin) & (gDist < iDiagMax) & (bKeepMain | (gDist != 0)))
     return sp.coo_matrix((a.data[idx], (a.row[idx], a.col[idx])),
